@@ -1,0 +1,13 @@
+{
+  "name": "log-monitor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^15.0.3"
+  },
+  "dependencies": {
+    "@types/koa": "^2.13.1",
+    "koa": "^2.13.1"
+  }
+}
