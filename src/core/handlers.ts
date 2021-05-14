@@ -11,26 +11,18 @@ export interface IStandardLogFile {
  * @param filter 日志过滤器
  */
 export const formatter = (log: string, filter?: RegExp) => {
-    if (!!log) {
+    if (!log) {
         return []
     } else {
         log = log.replace(/\r\n/g, "\n")
     }
 
     if (!!filter) {
-        return log.split("\n").filter((item: string) => !filter.test(item))
+        return log
+            .split("\n")
+            .filter((item: string) => !filter.test(item) && !!item)
     } else {
-        return log.split("\n")
-    }
-}
-
-/**
- * 日志格式转换工具
- * @param logs 日志切割之后的数组
- */
-export const transformer = (logs: Array<string>, mode?: "nginx" | "custom") => {
-    if (!!logs || logs.length === 0) {
-        return null
+        return log.split("\n").filter((item: string) => !!item)
     }
 }
 
@@ -44,7 +36,7 @@ export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
     }
 
     // 过滤后缀.error.log .access.log .error.log.1
-    const fileRegex = /.([error|access]+).log(.[0-9]+)?$/
+    const fileRegex = /\.?([error|access]+).log(.[0-9]+)?(.gz)?$/
 
     if (!mode || mode === "nginx") {
         // 过滤获取文件信息
@@ -52,7 +44,15 @@ export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
             .readdirSync(path, {
                 encoding: "utf-8",
             })
-            .filter((item: string) => fileRegex.test(item))
+            .filter((item: string) => {
+                // 更改filter条件
+                const res = fileRegex.exec(item)
+                if (!!res && ["access", "error"].includes(res[1]) && !res[3]) {
+                    return true
+                } else {
+                    return false
+                }
+            })
 
         if (files.length === 0) {
             return null
@@ -71,35 +71,5 @@ export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
             })
             .filter((item: IStandardLogFile) => !!item.content)
         return result
-    }
-}
-
-/**
- * 标准化各种日志信息
- * @param log 各种类型日志
- * @param filter 过滤器
- */
-export const rawLogHandler = (
-    log: string | Array<string> | Array<IStandardLogFile>,
-    filter: RegExp
-): Array<string> => {
-    if (!log || log.length === 0) {
-        return null
-    }
-
-    if (typeof log === "string") {
-        return [log]
-    } else if (!!log[0] && typeof log[0] === "string") {
-        // 数组类型
-        return log as Array<string>
-    } else {
-        // 处理其他类型, 默认 标准日志文件 这种
-        // 读取所有的日志, 转化为字符串数组
-        const typedLog = log as Array<IStandardLogFile>
-        return typedLog
-            .map((item: IStandardLogFile) => [
-                ...formatter(item.content, filter),
-            ])
-            .flat(Infinity) as Array<string>
     }
 }
