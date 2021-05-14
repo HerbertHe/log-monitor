@@ -1,3 +1,5 @@
+import { nginxTimeConverter } from "./time"
+
 export interface IStandardLog {
     labels: Array<string>
     content: Array<Array<string>>
@@ -35,6 +37,7 @@ export const sorter = (
                 ]
             }
         })
+
         return {
             labels: [
                 "raw",
