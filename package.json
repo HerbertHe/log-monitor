@@ -1,6 +1,6 @@
 {
-  "name": "log-monitor",
-  "version": "1.0.0",
+  "name": "@herberthe/log-monitor",
+  "version": "0.0.2",
   "main": "./dist/index.js",
   "license": "MIT",
   "scripts": {
