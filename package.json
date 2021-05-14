@@ -1,6 +1,6 @@
 {
   "name": "@herberthe/log-monitor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./dist/index.js",
   "license": "MIT",
   "scripts": {
@@ -26,8 +26,5 @@
     "rollup": "^2.47.0",
     "typescript": "^4.2.4"
   },
-  "dependencies": {
-    "@types/koa": "^2.13.1",
-    "koa": "^2.13.1"
-  }
+  "dependencies": {}
 }
