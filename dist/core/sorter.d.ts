@@ -1,4 +1,4 @@
-interface IStandardLog {
+export interface IStandardLog {
     labels: Array<string>;
     content: Array<Array<string>>;
 }
@@ -12,4 +12,3 @@ export declare type ISorterFn = (logs: Array<string>) => {
  * @param mode
  */
 export declare const sorter: (log: Array<string>, mode?: "nginx" | "custom" | undefined, fn?: ISorterFn | undefined) => IStandardLog | null | undefined;
-export {};

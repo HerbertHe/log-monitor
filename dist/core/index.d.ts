@@ -20,6 +20,6 @@ declare class LogMonitor {
     private filter?;
     private custom?;
     constructor(opts: ILogMonitorOptions);
-    export: () => void;
+    export: () => any;
 }
 export default LogMonitor;
