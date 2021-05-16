@@ -15,7 +15,7 @@ yarn add @herberthe/log-monitor
 ## 使用方法
 
 ```ts
-const LogMonitor = require("@herberthe/log-monitor")
+const { LogMonitor } = require("@herberthe/log-monitor")
 const monitor = new LogMonitor(options)
 console.log(monitor.export())
 ```
