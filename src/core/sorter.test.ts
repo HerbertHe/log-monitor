@@ -8,7 +8,7 @@ test("测试nginx标准日志分拣器", () => {
     const raw = readFromPath(ex, "nginx")
     if (raw) {
         const logs = formatter(raw[0].content)
-        const result = sorter(logs)
+        const result = sorter(logs, "access")
         fs.writeFileSync(
             path.resolve(__dirname, "../../test_res/nginx_sorter.json"),
             JSON.stringify(result),

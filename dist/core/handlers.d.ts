@@ -1,5 +1,6 @@
 export interface IStandardLogFile {
     from: string;
+    type: "access" | "error";
     content: string;
 }
 /**

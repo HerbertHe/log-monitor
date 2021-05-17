@@ -8,7 +8,9 @@ export declare type ISorterFn = (logs: Array<string>) => {
 };
 /**
  * 日志分拣器
- * @param log 日志文件
+ * @param log
+ * @param type
  * @param mode
+ * @param fn
  */
-export declare const sorter: (log: Array<string>, mode?: "nginx" | "custom" | undefined, fn?: ISorterFn | undefined) => IStandardLog | null | undefined;
+export declare const sorter: (log: Array<string>, type: "access" | "error", mode?: "nginx" | "custom" | undefined, fn?: ISorterFn | undefined) => IStandardLog | null | undefined;

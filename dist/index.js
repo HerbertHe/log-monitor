@@ -119,62 +119,88 @@ var readFromPath = function readFromPath(path, mode) {
     // 过滤获取文件信息
     var files = fs__namespace.readdirSync(path, {
       encoding: "utf-8"
-    }).filter(function (item) {
-      // 更改filter条件
-      var res = fileRegex.exec(item);
-
-      if (!!res && ["access", "error"].includes(res[1]) && !res[3]) {
-        return true;
-      } else {
-        return false;
-      }
     });
 
     if (files.length === 0) {
       return null;
     }
 
-    var result = files.map(function (item) {
-      var content = fs__namespace.readFileSync("".concat(path, "/").concat(item), {
-        encoding: "utf-8"
-      });
-      return {
-        from: item,
-        content: content
-      };
-    }).filter(function (item) {
+    var result = [];
+
+    for (var i = 0; i < files.length; i++) {
+      var res = fileRegex.exec(files[i]);
+
+      if (!!res && ["access", "error"].includes(res[1]) && !res[3]) {
+        var content = fs__namespace.readFileSync("".concat(path, "/").concat(files[i]), {
+          encoding: "utf-8"
+        });
+        result.push({
+          from: files[i],
+          type: res[1],
+          content: content
+        });
+      }
+    }
+
+    return result.filter(function (item) {
       return !!item.content;
     });
-    return result;
   }
 };
 
 /**
  * 日志分拣器
- * @param log 日志文件
+ * @param log
+ * @param type
  * @param mode
+ * @param fn
  */
-var sorter = function sorter(log, mode, fn) {
+var sorter = function sorter(log, type, mode, fn) {
   if (!log) {
     return null;
   }
 
   if (!mode || mode === "nginx") {
     // nginx日志标准化处理
-    var regex = /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]*)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/;
-    var result = log.map(function (item) {
-      var res = regex.exec(item); // 转化为数组输出
+    if (type === "access") {
+      var regex = /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]*)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/;
+      var result = log.map(function (item) {
+        var res = regex.exec(item); // 转化为数组输出
 
-      if (!!res) {
-        return _toConsumableArray(res.filter(function (val, index) {
-          return !(index === 2);
-        }));
-      }
-    });
-    return {
-      labels: ["raw", "ip", "time", "request", "status", "code", "url", "ua"],
-      content: result
-    };
+        if (!!res) {
+          return _toConsumableArray(res.filter(function (val, index) {
+            return !(index === 2);
+          }));
+        }
+      }).filter(function (item) {
+        return !!item;
+      });
+      return {
+        labels: ["raw", "ip", "time", "request", "status", "code", "url", "ua"],
+        content: result
+      };
+    }
+
+    if (type === "error") {
+      // const regex = ""
+      // const result = log
+      //     .map((item: string) => {
+      //         const res = regex.exec(item) as RegExpExecArray
+      //         // 转化为数组输出
+      //         if (!!res) {
+      //             return [
+      //                 ...res.filter(
+      //                     (val: any, index: number) => !(index === 2)
+      //                 ),
+      //             ]
+      //         }
+      //     })
+      //     .filter((item: any) => !!item)
+      return {
+        labels: [],
+        content: []
+      };
+    }
   }
 
   if (mode === "custom") {
@@ -225,17 +251,19 @@ var LogMonitor = function LogMonitor(opts) {
           if (afterFormat.length === 0) {
             result.push({
               from: item.from,
+              type: item.type,
               logs: {
                 labels: [],
                 content: []
               }
             });
           } else {
-            var afterSorted = sorter(afterFormat);
+            var afterSorted = sorter(afterFormat, item.type);
 
             if (!!afterSorted) {
               result.push({
                 from: item.from,
+                type: item.type,
                 logs: afterSorted
               });
             }
