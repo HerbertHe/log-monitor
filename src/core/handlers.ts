@@ -2,6 +2,7 @@ import * as fs from "fs"
 
 export interface IStandardLogFile {
     from: string
+    type: "access" | "error"
     content: string
 }
 
@@ -40,36 +41,32 @@ export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
 
     if (!mode || mode === "nginx") {
         // 过滤获取文件信息
-        const files = fs
-            .readdirSync(path, {
-                encoding: "utf-8",
-            })
-            .filter((item: string) => {
-                // 更改filter条件
-                const res = fileRegex.exec(item)
-                if (!!res && ["access", "error"].includes(res[1]) && !res[3]) {
-                    return true
-                } else {
-                    return false
-                }
-            })
+
+        const files = fs.readdirSync(path, {
+            encoding: "utf-8",
+        })
 
         if (files.length === 0) {
             return null
         }
 
-        const result = files
-            .map((item: string) => {
-                const content = fs.readFileSync(`${path}/${item}`, {
+        let result = []
+
+        for (let i = 0; i < files.length; i++) {
+            const res = fileRegex.exec(files[i])
+            if (!!res && ["access", "error"].includes(res[1]) && !res[3]) {
+                const content = fs.readFileSync(`${path}/${files[i]}`, {
                     encoding: "utf-8",
                 })
 
-                return {
-                    from: item,
+                result.push({
+                    from: files[i],
+                    type: res[1],
                     content,
-                } as IStandardLogFile
-            })
-            .filter((item: IStandardLogFile) => !!item.content)
-        return result
+                } as IStandardLogFile)
+            }
+        }
+
+        return result.filter((item: IStandardLogFile) => !!item.content)
     }
 }

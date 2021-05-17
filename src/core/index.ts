@@ -43,13 +43,15 @@ class LogMonitor {
                     if (afterFormat.length === 0) {
                         result.push({
                             from: item.from,
+                            type: item.type,
                             logs: { labels: [], content: [] },
                         })
                     } else {
-                        const afterSorted = sorter(afterFormat)
+                        const afterSorted = sorter(afterFormat, item.type)
                         if (!!afterSorted) {
                             result.push({
                                 from: item.from,
+                                type: item.type,
                                 logs: afterSorted,
                             })
                         }
