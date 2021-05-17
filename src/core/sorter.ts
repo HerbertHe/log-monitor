@@ -27,7 +27,7 @@ export const sorter = (
     if (!mode || mode === "nginx") {
         // nginx日志标准化处理
         const regex =
-            /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]+)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/
+            /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]*)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/
         const result = log.map((item: string) => {
             const res = regex.exec(item) as RegExpExecArray
             // 转化为数组输出
