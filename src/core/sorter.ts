@@ -62,24 +62,32 @@ export const sorter = (
         }
 
         if (type === "error") {
-            // const regex = ""
-            // const result = log
-            //     .map((item: string) => {
-            //         const res = regex.exec(item) as RegExpExecArray
-            //         // 转化为数组输出
-            //         if (!!res) {
-            //             return [
-            //                 ...res.filter(
-            //                     (val: any, index: number) => !(index === 2)
-            //                 ),
-            //             ]
-            //         }
-            //     })
-            //     .filter((item: any) => !!item)
+            const regex =
+                /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[error\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(([a-z]+:\s*\"[^"]*\",? ?)+)+/
+                // /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[error\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(request:\s*[^,\n]+),\s*(upstream:\s*[^,]+)?,?\s*(host:\s*\"[^"]*\")/
+            const result = log
+                .map((item: string) => {
+                    const res = regex.exec(item) as RegExpExecArray
+                    // 转化为数组输出
+                    if (!!res) {
+                        let tmp = []
+                        for (let i = 0; i < res.length; i++) {
+                            if (i !== 2 && i !== 9) {
+                                if (!res[i]) {
+                                    tmp.push("")
+                                    continue
+                                }
+                                tmp.push(res[i])
+                            }
+                        }
+                        return tmp
+                    }
+                })
+                .filter((item: any) => !!item)
 
             return {
                 labels: [],
-                content: [],
+                content: result,
             } as IStandardLog
         }
     }
