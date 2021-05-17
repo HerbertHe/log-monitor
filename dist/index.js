@@ -161,7 +161,7 @@ var sorter = function sorter(log, mode, fn) {
 
   if (!mode || mode === "nginx") {
     // nginx日志标准化处理
-    var regex = /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]+)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/;
+    var regex = /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]*)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/;
     var result = log.map(function (item) {
       var res = regex.exec(item); // 转化为数组输出
 
