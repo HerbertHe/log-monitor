@@ -1,6 +1,6 @@
 {
   "name": "@herberthe/log-monitor",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "./dist/index.js",
   "license": "MIT",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "yarn build:js && yarn build:types",
     "build:js": "rollup -c",
     "build:types": "tsc --emitDeclarationOnly",
-    "pub": "yarn build && yrm use npm && npm publish",
+    "pub": "yarn test && yarn build && yrm use npm && npm publish",
     "test": "jest",
     "test:cover": "jest --coverage"
   },

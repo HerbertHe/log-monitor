@@ -53,8 +53,8 @@ export const sorter = (
                     "time",
                     "request",
                     "status",
-                    "code",
-                    "url",
+                    "bytes",
+                    "referer",
                     "ua",
                 ],
                 content: result,
@@ -63,8 +63,7 @@ export const sorter = (
 
         if (type === "error") {
             const regex =
-                /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[error\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(([a-z]+:\s*\"[^"]*\",? ?)+)+/
-                // /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[error\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(request:\s*[^,\n]+),\s*(upstream:\s*[^,]+)?,?\s*(host:\s*\"[^"]*\")/
+                /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[([a-z]+)\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(request:\s*\"[^"]+\"),? ?(upstream:\s*\"[^"]+\")?(host:\s*\"[^"]+\")?,? ?(referrer:\s*\"[^"]+\")?/
             const result = log
                 .map((item: string) => {
                     const res = regex.exec(item) as RegExpExecArray
@@ -72,7 +71,7 @@ export const sorter = (
                     if (!!res) {
                         let tmp = []
                         for (let i = 0; i < res.length; i++) {
-                            if (i !== 2 && i !== 9) {
+                            if (i !== 2) {
                                 if (!res[i]) {
                                     tmp.push("")
                                     continue
@@ -86,7 +85,19 @@ export const sorter = (
                 .filter((item: any) => !!item)
 
             return {
-                labels: [],
+                labels: [
+                    "raw",
+                    "time",
+                    "level",
+                    "pid",
+                    "message",
+                    "client",
+                    "server",
+                    "request",
+                    "upstream",
+                    "host",
+                    "referrer",
+                ],
                 content: result,
             } as IStandardLog
         }

@@ -176,29 +176,41 @@ var sorter = function sorter(log, type, mode, fn) {
         return !!item;
       });
       return {
-        labels: ["raw", "ip", "time", "request", "status", "code", "url", "ua"],
+        labels: ["raw", "ip", "time", "request", "status", "bytes", "referer", "ua"],
         content: result
       };
     }
 
     if (type === "error") {
-      // const regex = ""
-      // const result = log
-      //     .map((item: string) => {
-      //         const res = regex.exec(item) as RegExpExecArray
-      //         // 转化为数组输出
-      //         if (!!res) {
-      //             return [
-      //                 ...res.filter(
-      //                     (val: any, index: number) => !(index === 2)
-      //                 ),
-      //             ]
-      //         }
-      //     })
-      //     .filter((item: any) => !!item)
+      var _regex = /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[([a-z]+)\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(request:\s*\"[^"]+\"),? ?(upstream:\s*\"[^"]+\")?(host:\s*\"[^"]+\")?,? ?(referrer:\s*\"[^"]+\")?/;
+
+      var _result = log.map(function (item) {
+        var res = _regex.exec(item); // 转化为数组输出
+
+
+        if (!!res) {
+          var tmp = [];
+
+          for (var i = 0; i < res.length; i++) {
+            if (i !== 2) {
+              if (!res[i]) {
+                tmp.push("");
+                continue;
+              }
+
+              tmp.push(res[i]);
+            }
+          }
+
+          return tmp;
+        }
+      }).filter(function (item) {
+        return !!item;
+      });
+
       return {
-        labels: [],
-        content: []
+        labels: ["raw", "time", "level", "pid", "message", "client", "server", "request", "upstream", "host", "referrer"],
+        content: _result
       };
     }
   }
