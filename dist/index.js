@@ -209,7 +209,7 @@ var sorter = function sorter(log, type, mode, fn) {
       });
 
       return {
-        labels: ["raw", "time", "level", "pid", "message", "client", "server", "request", "upstream", "host", "referrer"],
+        labels: ["raw", "time", "level", "pid", "number", "message", "client", "server", "request", "upstream", "host", "referrer"],
         content: _result
       };
     }

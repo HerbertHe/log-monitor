@@ -90,6 +90,7 @@ export const sorter = (
                     "time",
                     "level",
                     "pid",
+                    "number",
                     "message",
                     "client",
                     "server",
