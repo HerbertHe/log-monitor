@@ -1,11 +1,11 @@
-import { IStandardLogFile } from "../typings/types"
+import { IStandardLogFile, ModeType } from "../typings/types"
 import { formatter, readFromPath } from "./handlers"
 import { ISorterFn, sorter } from "./sorter"
 
 interface ILogMonitorOptions {
     log?: string | Array<string>
     path?: string
-    mode?: "nginx" | "custom"
+    mode?: ModeType
     filter?: RegExp
     custom?: ICustom
 }
@@ -21,7 +21,7 @@ interface ICustom {
 class LogMonitor {
     private log?: string | Array<string>
     private path?: string
-    private mode?: "nginx" | "custom" = "nginx"
+    private mode?: ModeType = "nginx"
     private filter?: RegExp
     private custom?: ICustom
     constructor(opts: ILogMonitorOptions) {
