@@ -1,4 +1,5 @@
-import { formatter, IStandardLogFile, readFromPath } from "./handlers"
+import { IStandardLogFile } from "../typings/types"
+import { formatter, readFromPath } from "./handlers"
 import { ISorterFn, sorter } from "./sorter"
 
 interface ILogMonitorOptions {
@@ -44,14 +45,20 @@ class LogMonitor {
                         result.push({
                             from: item.from,
                             type: item.type,
+                            mode: !this.mode ? "nginx" : this.mode,
                             logs: { labels: [], content: [] },
                         })
                     } else {
-                        const afterSorted = sorter(afterFormat, item.type)
+                        const afterSorted = sorter(
+                            afterFormat,
+                            item.type,
+                            item.mode
+                        )
                         if (!!afterSorted) {
                             result.push({
                                 from: item.from,
                                 type: item.type,
+                                mode: !this.mode ? "nginx" : this.mode,
                                 logs: afterSorted,
                             })
                         }

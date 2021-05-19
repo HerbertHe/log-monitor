@@ -1,10 +1,5 @@
 import * as fs from "fs"
-
-export interface IStandardLogFile {
-    from: string
-    type: "access" | "error"
-    content: string
-}
+import { IStandardLogFile, ModeType } from "../typings/types"
 
 /**
  * 日志标准化工具
@@ -31,7 +26,7 @@ export const formatter = (log: string, filter?: RegExp) => {
  * 从本地读取日志
  * @param path 本地路径
  */
-export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
+export const readFromPath = (path: string, mode?: ModeType) => {
     if (!path) {
         return null
     }
@@ -39,7 +34,7 @@ export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
     // 过滤后缀.error.log .access.log .error.log.1
     const fileRegex = /\.?([error|access]+).log(.[0-9]+)?(.gz)?$/
 
-    if (!mode || mode === "nginx") {
+    if (!mode || ["nginx", "apache"].includes(mode)) {
         // 过滤获取文件信息
 
         const files = fs.readdirSync(path, {
@@ -63,6 +58,7 @@ export const readFromPath = (path: string, mode?: "nginx" | "custom") => {
                     from: files[i],
                     type: res[1],
                     content,
+                    mode: !mode ? "nginx" : mode,
                 } as IStandardLogFile)
             }
         }
