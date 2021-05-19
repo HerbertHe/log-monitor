@@ -1,3 +1,4 @@
+import { ModeType } from "../typings/types";
 export interface IStandardLog {
     labels: Array<string>;
     content: Array<Array<string>>;
@@ -13,4 +14,4 @@ export declare type ISorterFn = (logs: Array<string>) => {
  * @param mode
  * @param fn
  */
-export declare const sorter: (log: Array<string>, type: "access" | "error", mode?: "nginx" | "custom" | undefined, fn?: ISorterFn | undefined) => IStandardLog | null | undefined;
+export declare const sorter: (log: Array<string>, type: "access" | "error", mode?: ModeType | undefined, fn?: ISorterFn | undefined) => IStandardLog | null | undefined;

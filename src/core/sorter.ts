@@ -104,6 +104,25 @@ export const sorter = (
         } as IStandardLog
     }
 
+    if (mode === "apache" && type === "error") {
+        const regex =
+            /\[([^\]]+)\]\s*\[([a-z]+)\]\s*\[client\s*([0-9\.?]+)\]\s*([^\n]+)/
+        const result = log
+            .map((item: string) => {
+                const res = regex.exec(item) as RegExpExecArray
+                // 转化为数组输出
+                if (!!res) {
+                    return [...res]
+                }
+            })
+            .filter((item: any) => !!item)
+
+        return {
+            labels: ["raw", "time", "level", "client", "message"],
+            content: result,
+        } as IStandardLog
+    }
+
     if (mode === "custom") {
         if (!fn) {
             throw new Error("No custom sorter function found!")

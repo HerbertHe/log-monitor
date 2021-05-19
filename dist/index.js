@@ -83,13 +83,39 @@ function _nonIterableSpread() {
 /**
  * 日志标准化工具
  * @param log 日志内容
+ * @param mode 日志模式
+ * @param type 日志类型
  * @param filter 日志过滤器
  */
-var formatter = function formatter(log, filter) {
+var formatter = function formatter(log, mode, type, filter) {
   if (!log) {
     return [];
   } else {
     log = log.replace(/\r\n/g, "\n");
+  } // 处理掉mode时apache error的情况
+
+
+  if (mode === "apache" && type === "error") {
+    var ApacheErrorRegex = /\[([^\]]+)\]\s*\[([a-z]+)\]\s*\[client\s*([0-9\.?]+)\]\s*([^\[]+)\n?/g;
+    var res = log.match(ApacheErrorRegex);
+
+    if (!!res) {
+      if (!!filter) {
+        return res.map(function (item) {
+          return item.replace(/\s+/g, " ").trim();
+        }).filter(function (item) {
+          return !filter.test(item) && !!item;
+        });
+      } else {
+        return res.map(function (item) {
+          return item.replace(/\s+/g, " ").trim();
+        }).filter(function (item) {
+          return !!item;
+        });
+      }
+    }
+
+    return [];
   }
 
   if (!!filter) {
@@ -113,9 +139,9 @@ var readFromPath = function readFromPath(path, mode) {
   } // 过滤后缀.error.log .access.log .error.log.1
 
 
-  var fileRegex = /\.?([error|access]+).log(.[0-9]+)?(.gz)?$/;
+  var fileRegex = /\.?([error|access]+)[.|_]log(.[0-9]+)?(.gz)?$/;
 
-  if (!mode || mode === "nginx") {
+  if (!mode || ["nginx", "apache"].includes(mode)) {
     // 过滤获取文件信息
     var files = fs__namespace.readdirSync(path, {
       encoding: "utf-8"
@@ -137,7 +163,8 @@ var readFromPath = function readFromPath(path, mode) {
         result.push({
           from: files[i],
           type: res[1],
-          content: content
+          content: content,
+          mode: !mode ? "nginx" : mode
         });
       }
     }
@@ -160,59 +187,77 @@ var sorter = function sorter(log, type, mode, fn) {
     return null;
   }
 
-  if (!mode || mode === "nginx") {
+  if ((!mode || ["nginx", "apache"].includes(mode)) && type === "access") {
     // nginx日志标准化处理
-    if (type === "access") {
-      var regex = /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]*)\"\s*([0-9]{3})\s*([0-9]+)\s*\"([^"]+)\"\s*\"([^"]+)\"/;
-      var result = log.map(function (item) {
-        var res = regex.exec(item); // 转化为数组输出
+    var regex = /(([0-9]{1,3}.?)+)\s*-\s*-\s*\[([^[]+)\]\s*\"([^"]*)\"\s*([0-9]{3})\s*([0-9]+)(\s*\"([^"]+)\"\s*\"([^"]+)\")?/;
+    var result = log.map(function (item) {
+      var res = regex.exec(item); // 转化为数组输出
 
-        if (!!res) {
-          return _toConsumableArray(res.filter(function (val, index) {
-            return !(index === 2);
-          }));
-        }
-      }).filter(function (item) {
-        return !!item;
-      });
-      return {
-        labels: ["raw", "ip", "time", "request", "status", "bytes", "referer", "ua"],
-        content: result
-      };
-    }
+      if (!!res) {
+        return _toConsumableArray(res.filter(function (val, index) {
+          return !(index === 2 || index === 7);
+        }));
+      }
+    }).filter(function (item) {
+      return !!item;
+    });
+    return {
+      labels: ["raw", "ip", "time", "request", "status", "bytes", "referer", "ua"],
+      content: result
+    };
+  }
 
-    if (type === "error") {
-      var _regex = /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[([a-z]+)\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(request:\s*\"[^"]+\"),? ?(upstream:\s*\"[^"]+\")?(host:\s*\"[^"]+\")?,? ?(referrer:\s*\"[^"]+\")?/;
+  if ((!mode || mode === "nginx") && type === "error") {
+    var _regex = /([0-9]{4}\/[0-9]{2}\/[0-9]{2} ([0-9]{2}:?)+)\s*\[([a-z]+)\]\s*([0-9#]+):\s*\*([0-9]+)\s*([^,]+),\s*(client:\s*[^,]+),\s*(server:\s*[^,]+),\s*(request:\s*\"[^"]+\"),? ?(upstream:\s*\"[^"]+\")?(host:\s*\"[^"]+\")?,? ?(referrer:\s*\"[^"]+\")?/;
 
-      var _result = log.map(function (item) {
-        var res = _regex.exec(item); // 转化为数组输出
+    var _result = log.map(function (item) {
+      var res = _regex.exec(item); // 转化为数组输出
 
 
-        if (!!res) {
-          var tmp = [];
+      if (!!res) {
+        var tmp = [];
 
-          for (var i = 0; i < res.length; i++) {
-            if (i !== 2) {
-              if (!res[i]) {
-                tmp.push("");
-                continue;
-              }
-
-              tmp.push(res[i]);
+        for (var i = 0; i < res.length; i++) {
+          if (i !== 2) {
+            if (!res[i]) {
+              tmp.push("");
+              continue;
             }
+
+            tmp.push(res[i]);
           }
-
-          return tmp;
         }
-      }).filter(function (item) {
-        return !!item;
-      });
 
-      return {
-        labels: ["raw", "time", "level", "pid", "number", "message", "client", "server", "request", "upstream", "host", "referrer"],
-        content: _result
-      };
-    }
+        return tmp;
+      }
+    }).filter(function (item) {
+      return !!item;
+    });
+
+    return {
+      labels: ["raw", "time", "level", "pid", "number", "message", "client", "server", "request", "upstream", "host", "referrer"],
+      content: _result
+    };
+  }
+
+  if (mode === "apache" && type === "error") {
+    var _regex2 = /\[([^\]]+)\]\s*\[([a-z]+)\]\s*\[client\s*([0-9\.?]+)\]\s*([^\n]+)/;
+
+    var _result2 = log.map(function (item) {
+      var res = _regex2.exec(item); // 转化为数组输出
+
+
+      if (!!res) {
+        return _toConsumableArray(res);
+      }
+    }).filter(function (item) {
+      return !!item;
+    });
+
+    return {
+      labels: ["raw", "time", "level", "client", "message"],
+      content: _result2
+    };
   }
 
   if (mode === "custom") {
@@ -258,24 +303,26 @@ var LogMonitor = function LogMonitor(opts) {
         // 日志存在
         var result = [];
         logs.forEach(function (item) {
-          var afterFormat = formatter(item.content, _this.filter);
+          var afterFormat = formatter(item.content, item.mode, item.type, _this.filter);
 
           if (afterFormat.length === 0) {
             result.push({
               from: item.from,
               type: item.type,
+              mode: !item.mode ? "nginx" : item.mode,
               logs: {
                 labels: [],
                 content: []
               }
             });
           } else {
-            var afterSorted = sorter(afterFormat, item.type);
+            var afterSorted = sorter(afterFormat, item.type, item.mode);
 
             if (!!afterSorted) {
               result.push({
                 from: item.from,
                 type: item.type,
+                mode: !item.mode ? "nginx" : item.mode,
                 logs: afterSorted
               });
             }

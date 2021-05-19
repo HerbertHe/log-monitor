@@ -40,12 +40,17 @@ class LogMonitor {
                 // 日志存在
                 let result: any = []
                 logs.forEach((item: IStandardLogFile) => {
-                    const afterFormat = formatter(item.content, this.filter)
+                    const afterFormat = formatter(
+                        item.content,
+                        item.mode,
+                        item.type,
+                        this.filter
+                    )
                     if (afterFormat.length === 0) {
                         result.push({
                             from: item.from,
                             type: item.type,
-                            mode: !this.mode ? "nginx" : this.mode,
+                            mode: !item.mode ? "nginx" : item.mode,
                             logs: { labels: [], content: [] },
                         })
                     } else {
@@ -58,7 +63,7 @@ class LogMonitor {
                             result.push({
                                 from: item.from,
                                 type: item.type,
-                                mode: !this.mode ? "nginx" : this.mode,
+                                mode: !item.mode ? "nginx" : item.mode,
                                 logs: afterSorted,
                             })
                         }

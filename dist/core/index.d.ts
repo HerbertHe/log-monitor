@@ -1,8 +1,9 @@
+import { ModeType } from "../typings/types";
 import { ISorterFn } from "./sorter";
 interface ILogMonitorOptions {
     log?: string | Array<string>;
     path?: string;
-    mode?: "nginx" | "custom";
+    mode?: ModeType;
     filter?: RegExp;
     custom?: ICustom;
 }

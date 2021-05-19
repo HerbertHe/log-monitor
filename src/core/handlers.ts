@@ -4,13 +4,39 @@ import { IStandardLogFile, ModeType } from "../typings/types"
 /**
  * 日志标准化工具
  * @param log 日志内容
+ * @param mode 日志模式
+ * @param type 日志类型
  * @param filter 日志过滤器
  */
-export const formatter = (log: string, filter?: RegExp) => {
+export const formatter = (
+    log: string,
+    mode?: ModeType,
+    type?: "error" | "access",
+    filter?: RegExp
+) => {
     if (!log) {
         return []
     } else {
         log = log.replace(/\r\n/g, "\n")
+    }
+
+    // 处理掉mode时apache error的情况
+    if (mode === "apache" && type === "error") {
+        const ApacheErrorRegex =
+            /\[([^\]]+)\]\s*\[([a-z]+)\]\s*\[client\s*([0-9\.?]+)\]\s*([^\[]+)\n?/g
+        const res = log.match(ApacheErrorRegex)
+        if (!!res) {
+            if (!!filter) {
+                return res
+                    .map((item: string) => item.replace(/\s+/g, " ").trim())
+                    .filter((item: string) => !filter.test(item) && !!item)
+            } else {
+                return res
+                    .map((item: string) => item.replace(/\s+/g, " ").trim())
+                    .filter((item: string) => !!item)
+            }
+        }
+        return []
     }
 
     if (!!filter) {
