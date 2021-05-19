@@ -32,7 +32,7 @@ export const readFromPath = (path: string, mode?: ModeType) => {
     }
 
     // 过滤后缀.error.log .access.log .error.log.1
-    const fileRegex = /\.?([error|access]+).log(.[0-9]+)?(.gz)?$/
+    const fileRegex = /\.?([error|access]+)[.|_]log(.[0-9]+)?(.gz)?$/
 
     if (!mode || ["nginx", "apache"].includes(mode)) {
         // 过滤获取文件信息
